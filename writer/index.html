@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A private writing space for morning messages and special notes for Ashley.">
-<title>Notes for Ashley</title><link rel="stylesheet" href="style.css?v=draft-editor-1"><script defer src="app.js?v=reading-and-writing-1"></script>
+<title>Notes for Ashley</title><link rel="stylesheet" href="style.css?v=letters-2"><script defer src="app.js?v=letters-2"></script>
 </head>
 <body>
 <aside class="sidebar">
@@ -29,4 +29,8 @@
 </details><br><div id="workspace"></div>
 </main>
 <div id="status" role="status" aria-live="polite"></div>
+<dialog id="letter-preview" aria-labelledby="preview-title">
+<form method="dialog"><button type="submit">Close preview</button></form>
+<div class="preview-letter"><h2 id="preview-title">For Ashley</h2><time></time><p class="preview-occasion"></p><p class="preview-message"></p></div>
+</dialog>
 </body></html>
