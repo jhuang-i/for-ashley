@@ -6,15 +6,60 @@
 <meta name="robots" content="noindex,noarchive">
 <title>For Ashley</title>
 <style>
-html { color-scheme: dark; background: #141021; color: #f8e3f5; font: 1rem/1.5 system-ui, sans-serif; }
-body { margin: 0; display: grid; grid-template-rows: minmax(0,1fr) auto; height: 100vh; height: 100dvh; }
-iframe { display: block; width: 100%; height: 100%; border: 0; }
-footer { padding: .6rem 1rem; text-align: center; }
-a { color: #ecc4e6; text-underline-offset: .2em; }
+:root{color-scheme:dark;background:#141021;color:#fbf0fa;font:16px/1.65 system-ui,sans-serif}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0%,#46304f 0%,#21182f 45%,#141021 85%)}main{width:min(100% - 2rem,700px);margin:auto;padding:clamp(34px,9vw,98px) 0 64px}header{text-align:center;margin:0 auto 32px}.moon{display:inline-grid;place-items:center;width:64px;height:64px;border:1px solid #9878a2;border-radius:50%;font-size:2rem;color:#f6d1ed;background:#55395f;box-shadow:0 0 46px #e0a9d755;margin-bottom:18px}.eyebrow,time{font-size:.85rem;color:#ecc4e6;letter-spacing:.09em}h1,h2,.letter{font-family:Georgia,serif;font-weight:400}h1{font-size:clamp(2.7rem,9vw,5rem);line-height:1.02;letter-spacing:-.05em;margin:0 0 13px}h2{margin:0 0 12px;font-size:1.65rem}.card,details{border:1px solid #5a4568;background:#21192e;border-radius:18px;padding:clamp(21px,5vw,36px)}.card .eyebrow{margin:0 0 12px}.letter{font-size:clamp(1.24rem,3vw,1.52rem);line-height:1.65;margin:0;white-space:pre-wrap;overflow-wrap:anywhere}.archive{margin-top:34px}details{margin-bottom:10px;padding:12px 17px}summary{cursor:pointer;color:#f8e3f5}details .letter{font-size:1.17rem;margin-bottom:10px}.links{display:flex;justify-content:space-between;gap:10px;margin-top:14px}a{color:#ecc4e6}summary:focus-visible,a:focus-visible{outline:2px solid #ecc4e6;outline-offset:4px}
 </style>
 </head>
-<body>
-<iframe title="Today's note for Ashley and earlier notes" src="https://a-note-for-ashley.memorableblackbird1.chatgpt.site/"></iframe>
-<footer><a href="https://a-note-for-ashley.memorableblackbird1.chatgpt.site/">Open the reading page directly</a></footer>
-</body>
-</html>
+<body><main>
+<header><span class="moon" aria-hidden="true">☾</span><h1>For Ashley</h1><time id="date"></time></header>
+<article class="card" aria-label="Today’s note" aria-live="polite" id="today"><p class="letter">Opening today’s note…</p></article>
+<section class="archive" id="archive" hidden><h2>Earlier notes</h2><div id="earlier"></div></section>
+</main>
+<script>
+const eastern = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' });
+const longDate = new Intl.DateTimeFormat('en-US', { timeZone: 'UTC', weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+const today = eastern.format(new Date());
+const pretty = day => longDate.format(new Date(day + 'T12:00:00Z'));
+const date = document.querySelector('#date');
+date.dateTime = today;
+date.textContent = pretty(today);
+const current = document.querySelector('#today');
+function paragraph(className, text) {
+  const element = document.createElement('p');
+  element.className = className;
+  element.textContent = text;
+  return element;
+}
+function noteContent(note) {
+  return [paragraph('eyebrow', note.occasion || 'A note for Ashley'), paragraph('letter', note.message)];
+}
+async function showNotes() {
+  try {
+    const response = await fetch('./notes.json', { cache: 'no-cache' });
+    if (!response.ok) throw new Error('Notes unavailable');
+    const entries = await response.json();
+    const notes = new Map();
+    for (const note of entries) {
+      if (!note || typeof note.day !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(note.day) || typeof note.message !== 'string' || !note.message.trim()) continue;
+      const date = new Date(note.day + 'T12:00:00Z');
+      if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== note.day) continue;
+      notes.set(note.day, note);
+    }
+    const note = notes.get(today);
+    current.replaceChildren(...(note ? noteContent(note) : [paragraph('letter', 'There’s no new note for today yet. I’m glad you stopped by, Ashley.')]));
+    const earlier = [...notes.keys()].filter(day => day < today).sort().reverse();
+    const archive = document.querySelector('#earlier');
+    for (const day of earlier) {
+      const item = document.createElement('details');
+      const title = document.createElement('summary');
+      title.textContent = pretty(day);
+      item.append(title, ...noteContent(notes.get(day)));
+      archive.append(item);
+    }
+    document.querySelector('#archive').hidden = earlier.length === 0;
+  } catch {
+    current.replaceChildren(paragraph('letter', 'The notes couldn’t load. Please try refreshing the page.'));
+  }
+}
+showNotes();
+</script>
+</body></html>
