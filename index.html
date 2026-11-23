@@ -7,11 +7,15 @@
 <title>For Ashley</title>
 <style>
 :root{color-scheme:dark;background:#141021;color:#fbf0fa;font:16px/1.65 system-ui,sans-serif}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0%,#46304f 0%,#21182f 45%,#141021 85%)}main{width:min(100% - 2rem,700px);margin:auto;padding:clamp(34px,9vw,98px) 0 64px}header{text-align:center;margin:0 auto 32px}.moon{display:inline-grid;place-items:center;width:64px;height:64px;border:1px solid #9878a2;border-radius:50%;font-size:2rem;color:#f6d1ed;background:#55395f;box-shadow:0 0 46px #e0a9d755;margin-bottom:18px}.eyebrow,time{font-size:.85rem;color:#ecc4e6;letter-spacing:.09em}h1,h2,.letter{font-family:Georgia,serif;font-weight:400}h1{font-size:clamp(2.7rem,9vw,5rem);line-height:1.02;letter-spacing:-.05em;margin:0 0 13px}h2{margin:0 0 12px;font-size:1.65rem}.card,details{border:1px solid #5a4568;background:#21192e;border-radius:18px;padding:clamp(21px,5vw,36px)}.card .eyebrow{margin:0 0 12px}.letter{font-size:clamp(1.24rem,3vw,1.52rem);line-height:1.65;margin:0;white-space:pre-wrap;overflow-wrap:anywhere}.archive{margin-top:34px}details{margin-bottom:10px;padding:12px 17px}summary{cursor:pointer;color:#f8e3f5}details .letter{font-size:1.17rem;margin-bottom:10px}.links{display:flex;justify-content:space-between;gap:10px;margin-top:14px}a{color:#ecc4e6}summary:focus-visible,a:focus-visible{outline:2px solid #ecc4e6;outline-offset:4px}
+
+.card h2{font-size:1.15rem;color:#ecc4e6;margin:0 0 18px}.card .archive-link{display:inline-block;margin-top:18px}
+.archive summary{padding:4px 0}.archive details[open] summary{margin-bottom:12px}
+@media(max-width:480px){main{padding-top:32px}header{margin-bottom:24px}.moon{width:52px;height:52px}}
 </style>
 </head>
 <body><main>
 <header><span class="moon" aria-hidden="true">☾</span><h1>For Ashley</h1><time id="date"></time></header>
-<article class="card" aria-label="Today’s note" aria-live="polite" id="today"><p class="letter">Opening today’s note…</p></article>
+<article class="card" aria-label="Featured note" aria-live="polite" id="today"><p class="letter">Opening today’s note…</p></article>
 <section class="archive" id="archive" hidden><h2>Earlier notes</h2><div id="earlier"></div></section>
 </main>
 <script>
@@ -45,9 +49,22 @@ async function showNotes() {
       notes.set(note.day, note);
     }
     const note = notes.get(today);
-    current.replaceChildren(...(note ? noteContent(note) : [paragraph('letter', 'There’s no new note for today yet. I’m glad you stopped by, Ashley.')]));
     const earlier = [...notes.keys()].filter(day => day < today).sort().reverse();
+    const newest = earlier[0];
+    const title = document.createElement('h2');
+    title.textContent = note ? 'Today’s note' : newest ? 'Latest note · ' + pretty(newest) : 'Today’s note';
+    const featured = note || notes.get(newest);
+    current.replaceChildren(title, ...(featured ? noteContent(featured) : [
+      paragraph('letter', 'There’s no new note for today yet. I’m glad you stopped by, Ashley.')
+    ]));
     const archive = document.querySelector('#earlier');
+    if (earlier.length) {
+      const link = document.createElement('a');
+      link.href = '#archive';
+      link.className = 'archive-link';
+      link.textContent = 'Browse earlier notes';
+      current.append(link);
+    }
     for (const day of earlier) {
       const item = document.createElement('details');
       const title = document.createElement('summary');
