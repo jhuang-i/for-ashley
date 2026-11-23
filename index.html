@@ -11,12 +11,19 @@
 .card h2{font-size:1.15rem;color:#ecc4e6;margin:0 0 18px}.card .archive-link{display:inline-block;margin-top:18px}
 .archive summary{padding:4px 0}.archive details[open] summary{margin-bottom:12px}
 @media(max-width:480px){main{padding-top:32px}header{margin-bottom:24px}.moon{width:52px;height:52px}}
+
+:root{background:#130e20}body{background:radial-gradient(ellipse at 50% 0%,#4d3054,transparent 55%),#130e20}
+header{margin-bottom:40px}h1{font-style:italic}.moon{color:#f8dca3;border-color:#c09a78;background:#432c4f}
+.card{background:linear-gradient(155deg,#f8eee7,#f1dcf1);color:#34213b;border-color:#e9cfe9;box-shadow:0 24px 58px #09060d70}
+.card h2,.card .eyebrow,.card a,.card summary{color:#653861}.card details{border:0;background:transparent;padding:0;margin:0}.card details:not([open]) summary{margin:0}
+.envelope summary{display:flex;align-items:center;gap:.75rem;font:1.3rem Georgia,serif;min-height:48px;list-style:none}.envelope summary::-webkit-details-marker{display:none}.envelope summary::before{content:'✉';font-size:1.5em}.envelope[open] summary{border-bottom:1px solid #bc99bb;padding-bottom:12px}.card summary:focus-visible{outline-color:#653861}
+.archive label{display:grid;gap:6px;margin-bottom:14px;color:#ecc4e6}.archive input{width:100%;font:inherit;padding:9px 12px;background:#21192e;color:#fbf0fa;border:1px solid #8b719b;border-radius:9px}.month{margin:20px 0 8px;color:#ecc4e6;font-family:Georgia,serif;font-size:1.15rem}
 </style>
 </head>
 <body><main>
 <header><span class="moon" aria-hidden="true">☾</span><h1>For Ashley</h1><time id="date"></time></header>
 <article class="card" aria-label="Featured note" aria-live="polite" id="today"><p class="letter">Opening today’s note…</p></article>
-<section class="archive" id="archive" hidden><h2>Earlier notes</h2><div id="earlier"></div></section>
+<section class="archive" id="archive" hidden><h2>Earlier notes</h2><label>Search earlier notes<input type="search" id="search" placeholder="Search by words, date, or occasion"></label><div id="earlier"></div></section>
 </main>
 <script>
 const eastern = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' });
@@ -54,9 +61,23 @@ async function showNotes() {
     const title = document.createElement('h2');
     title.textContent = note ? 'Today’s note' : newest ? 'Latest note · ' + pretty(newest) : 'Today’s note';
     const featured = note || notes.get(newest);
-    current.replaceChildren(title, ...(featured ? noteContent(featured) : [
-      paragraph('letter', 'There’s no new note for today yet. I’m glad you stopped by, Ashley.')
-    ]));
+    current.replaceChildren(title);
+    if (featured) {
+      const envelope = document.createElement('details');
+      envelope.className = 'envelope';
+      try { envelope.open = sessionStorage.getItem('ashley-opened-' + featured.day) === 'yes'; } catch {}
+      const seal = document.createElement('summary');
+      seal.textContent = envelope.open ? 'Your letter' : 'Open your letter';
+      envelope.append(seal, ...noteContent(featured));
+      envelope.addEventListener('toggle', () => {
+        seal.textContent = envelope.open ? 'Your letter' : 'Open your letter';
+        try { sessionStorage.setItem('ashley-opened-' + featured.day, envelope.open ? 'yes' : 'no'); }
+        catch {}
+      });
+      current.append(envelope);
+    } else {
+      current.append(paragraph('letter', 'There’s no new note for today yet. I’m glad you stopped by, Ashley.'));
+    }
     const archive = document.querySelector('#earlier');
     if (earlier.length) {
       const link = document.createElement('a');
@@ -65,13 +86,33 @@ async function showNotes() {
       link.textContent = 'Browse earlier notes';
       current.append(link);
     }
-    for (const day of earlier) {
-      const item = document.createElement('details');
-      const title = document.createElement('summary');
-      title.textContent = pretty(day);
-      item.append(title, ...noteContent(notes.get(day)));
-      archive.append(item);
+    const search = document.querySelector('#search');
+    const monthName = new Intl.DateTimeFormat('en-US', { timeZone: 'UTC', month: 'long', year: 'numeric' });
+    function renderArchive() {
+      const query = search.value.trim().toLowerCase();
+      archive.replaceChildren();
+      let month = '';
+      for (const day of earlier) {
+        const entry = notes.get(day);
+        const dateLabel = pretty(day);
+        if (![day, dateLabel, entry.occasion, entry.message].join(' ').toLowerCase().includes(query)) continue;
+        if (day.slice(0, 7) !== month) {
+          month = day.slice(0, 7);
+          const heading = document.createElement('h3');
+          heading.className = 'month';
+          heading.textContent = monthName.format(new Date(day + 'T12:00:00Z'));
+          archive.append(heading);
+        }
+        const item = document.createElement('details');
+        const label = document.createElement('summary');
+        label.textContent = dateLabel;
+        item.append(label, ...noteContent(entry));
+        archive.append(item);
+      }
+      if (!archive.children.length && query) archive.append(paragraph('eyebrow', 'No earlier notes match.'));
     }
+    search.addEventListener('input', renderArchive);
+    renderArchive();
     document.querySelector('#archive').hidden = earlier.length === 0;
   } catch {
     current.replaceChildren(paragraph('letter', 'The notes couldn’t load. Please try refreshing the page.'));
