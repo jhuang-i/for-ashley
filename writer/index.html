@@ -2,31 +2,39 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="A private writing space for morning messages and special notes for Ashley.">
-<title>Notes for Ashley</title><link rel="stylesheet" href="style.css?v=letters-2"><script defer src="app.js?v=letters-2"></script>
-</head>
-<body>
-<aside class="sidebar">
-  <div class="brand"><span class="brand-icon">✦</span><div>Notes for Ashley<small>THE WRITING ROOM</small></div></div>
-  <nav aria-label="Writing room">
-    <button data-view="today"><span>☀</span> Today’s message</button>
-    <button data-view="history"><span>◷</span> Message history</button>
-    <button data-view="themes"><span>✧</span> Recurring themes</button>
-    <button data-view="date"><span>☾</span> Date night</button>
-    <button data-view="prompts"><span>▤</span> Reusable prompts</button>
-  </nav>
-  <div class="foot"><span>♡</span> Your drafts<small>Saved on this browser</small></div>
-</aside>
-<main>
-  <header class="hero">
-   <div class="sky" aria-hidden="true"><div class="moon"></div><i>✦</i><i>✧</i><i>✦</i><i>·</i><i>✧</i></div>
-   <div class="hero-copy"><p class="eyebrow" id="today-label"></p><h1 id="title"></h1><p id="subtitle"></p></div>
-  </header>
-  <div class="reader-link" style="gap:1rem;flex-wrap:wrap"><a href="#draft-heading">Jump to drafts</a><a href="../" target="_blank" rel="noopener">Open Ashley’s reading page</a></div>
-  <details class="panel"><summary>Publish a note on GitHub</summary>
-<p>Choose a date and tap <strong>Publish for Ashley</strong>. Review the prefilled GitHub issue and submit it while signed in as <strong>jhuang-i</strong>. GitHub Actions updates Ashley’s page after you submit.</p>
-<p>Each date holds one note. Submitting again for that date replaces the note on her page. GitHub issues and committed notes are public, including future-dated notes.</p>
-</details><br><div id="workspace"></div>
+<meta name="description" content="Write a letter for Ashley.">
+<title>Notes for Ashley</title>
+<link rel="stylesheet" href="style.css?v=letters-2">
+<script defer src="app.js?v=letter-editor-3"></script>
+<style>
+main{margin:0 auto;width:min(100%,780px);padding:20px clamp(14px,4vw,32px) 48px}
+.hero{min-height:155px;margin-bottom:16px}.top-links{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+a{color:var(--lavender);text-underline-offset:.2em}#letter-form{display:grid;gap:16px}#message{min-height:230px;font:1.15rem/1.6 Georgia,serif}
+#saved{margin-top:24px}#saved h2{margin-bottom:12px}#saved p{white-space:pre-wrap;overflow-wrap:anywhere}
+.hint{margin:0;color:var(--muted);font-size:.9rem}.empty{margin:0}
+</style></head>
+<body><main>
+<header class="hero">
+  <div class="sky" aria-hidden="true"><div class="moon"></div><i>✦</i><i>✧</i><i>✦</i></div>
+  <div class="hero-copy"><h1>Write to Ashley</h1><p id="today-label"></p></div>
+</header>
+<nav class="top-links" aria-label="Writing room links">
+  <a href="#saved">Saved notes</a><a href="../" target="_blank" rel="noopener">Ashley’s reading page</a>
+</nav>
+<section class="panel">
+<form id="letter-form">
+  <div class="pair"><label>Show on<input type="date" id="letter-day" required></label>
+  <label>Occasion<select id="occasion"><option>Morning</option><option>Date night</option><option>Thinking of you</option><option>A hard day</option><option>Celebration</option><option>Just because</option></select></label></div>
+  <label>Your letter<textarea id="message" maxlength="5000" rows="8" placeholder="Write something for Ashley…" required></textarea></label>
+  <div class="actions">
+    <button class="primary" type="submit">Publish for Ashley</button>
+    <button type="button" id="preview">Preview</button>
+    <button type="button" id="save">Save draft</button>
+  </div>
+  <p class="hint">Publishing opens a prefilled GitHub issue. Review it before you submit. Submitted notes are public.</p>
+</form>
+</section>
+<section id="saved"><h2>Saved notes</h2><div id="history" class="stack"></div></section>
 </main>
 <div id="status" role="status" aria-live="polite"></div>
 <dialog id="letter-preview" aria-labelledby="preview-title">
