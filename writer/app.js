@@ -186,6 +186,8 @@ function renderComposer() {
           <label class="draft-editor">Edit message<textarea aria-label="${esc(label)} message" data-text="${index}" rows="${label === 'Short option' ? 4 : 6}">${esc(draft.texts[index])}</textarea></label>
           <div class="actions">
              <button type="button" class="primary" data-action="save" data-index="${index}">${editor ? 'Save changes' : 'Save message'}</button>
+             <button type="button" data-action="preview" data-index="${index}">Preview letter</button>
+             ${editor ? '' : `<button type="button" data-action="regenerate" data-index="${index}">Regenerate this draft</button>`}
              <button type="button" data-action="copy" data-index="${index}">Copy</button>
              <button type="button" data-action="publish" data-index="${index}">Publish for Ashley</button>
              ${editor ? '<button type="button" data-action="cancel">Back to history</button>' : ''}
@@ -320,6 +322,31 @@ workspace.addEventListener('click', (event) => {
   const { action, index, id, name } = button.dataset;
   const note = state.history.find((item) => item.id === id);
   if (action === 'save') saveDraft(Number(index));
+  if (action === 'preview' && document.querySelector('#settings').reportValidity()) {
+    const { date, settings } = readForm();
+    const preview = document.querySelector('#letter-preview');
+    preview.querySelector('time').dateTime = date;
+    preview.querySelector('time').textContent = formatDay(date, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    preview.querySelector('.preview-occasion').textContent = settings.occasion;
+    preview.querySelector('.preview-message').textContent = clean(draft.texts[Number(index)]) || 'Your draft is empty.';
+    preview.showModal();
+  }
+  if (action === 'regenerate' && document.querySelector('#settings').reportValidity()) {
+    const { date, settings } = readForm();
+    const position = Number(index);
+    const previous = draft.texts[position];
+    let next = generate(settings)[position];
+    if (next === previous) next = generate(settings)[position];
+    draft.date = date;
+    draft.settings = settings;
+    draft.texts[position] = next;
+    if (view === 'today') state.settings = settings;
+    persist();
+    const field = workspace.querySelector('[data-text="' + position + '"]');
+    field.value = next;
+    field.focus();
+    notify('Draft regenerated.');
+  }
   if (action === 'publish' && document.querySelector('#settings').reportValidity()) {
     const { date, settings } = readForm();
     publishNote(button, date, settings.occasion, draft.texts[Number(index)]);
