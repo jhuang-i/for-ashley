@@ -1,0 +1,85 @@
+name: Publish Ashley's notes
+on:
+  issues:
+    types: [opened]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  save:
+    if: github.event_name == 'issues' && github.event.sender.login == 'jhuang-i' && github.event.issue.user.login == 'jhuang-i' && github.event.issue.title == 'Publish a note for Ashley'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Save the note
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            python3 - <<'PY'
+          import datetime, json, os
+          from pathlib import Path
+
+          event = json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text())
+          note = json.loads(event["issue"]["body"])
+          day = note["day"]
+          if datetime.date.fromisoformat(day).isoformat() != day:
+              raise ValueError("Use YYYY-MM-DD for the date")
+          occasion = note["occasion"]
+          if occasion not in ["Morning", "Date night", "Thinking of you", "A hard day", "Celebration", "Just because"]:
+              raise ValueError("Invalid occasion")
+          message = note["message"].strip()
+          if not 1 <= len(message) <= 5000:
+              raise ValueError("Write a note between 1 and 5,000 characters")
+          file = Path("notes.json")
+          notes = [item for item in json.loads(file.read_text()) if item["day"] != day]
+          notes.append({"day": day, "occasion": occasion, "message": message})
+          notes.sort(key=lambda item: item["day"])
+          file.write_text(json.dumps(notes, ensure_ascii=False, indent=2) + "\n")
+          PY
+            git add notes.json
+            if git diff --cached --quiet; then exit 0; fi
+            git commit -m "Publish Ashley's note from issue #${{ github.event.issue.number }}"
+            if git push origin HEAD:main; then exit 0; fi
+          done
+          exit 1
+
+  deploy:
+    needs: save
+    if: always() && (needs.save.result == 'success' || (needs.save.result == 'skipped' && github.event_name != 'issues'))
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ashley-pages
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/configure-pages@v5
+      - name: Prepare website
+        run: |
+          mkdir _site
+          cp index.html notes.json _site/
+          cp -r writer _site/
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+      - uses: actions/deploy-pages@v4
+        id: deployment
