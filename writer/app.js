@@ -179,7 +179,7 @@ function renderComposer() {
         <button class="primary" type="submit">✦ &nbsp; Generate both drafts</button>
         <button type="button" data-action="save-prompt">Save settings as prompt</button>`}
       </form></section>
-      <section><div class="section-head"><h2>${editor ? 'Saved draft' : 'Your drafts'}</h2></div>
+      <section aria-labelledby="draft-heading"><div class="section-head"><h2 id="draft-heading" tabindex="-1">${editor ? 'Saved draft' : 'Your drafts'}</h2>${editor ? '' : '<a href="#settings">Draft settings</a>'}</div>
       <div class="drafts">${variants.map((label, index) => `
         <article class="draft">
           <h3><span aria-hidden="true">${label === 'Short option' ? '☀' : '✧'}</span>${esc(label)}</h3>
@@ -311,6 +311,7 @@ workspace.addEventListener('submit', (event) => {
   if (view === 'today') state.settings = settings;
   persist();
   renderComposer();
+  document.querySelector('#draft-heading').focus();
   notify('Two fresh drafts are ready.');
 });
 workspace.addEventListener('click', (event) => {
