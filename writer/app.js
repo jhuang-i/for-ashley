@@ -183,7 +183,7 @@ function renderComposer() {
       <div class="drafts">${variants.map((label, index) => `
         <article class="draft">
           <h3><span aria-hidden="true">${label === 'Short option' ? '☀' : '✧'}</span>${esc(label)}</h3>
-          <textarea aria-label="${esc(label)} message" data-text="${index}" rows="${label === 'Short option' ? 3 : 4}">${esc(draft.texts[index])}</textarea>
+          <label class="draft-editor">Edit message<textarea aria-label="${esc(label)} message" data-text="${index}" rows="${label === 'Short option' ? 4 : 6}">${esc(draft.texts[index])}</textarea></label>
           <div class="actions">
              <button type="button" class="primary" data-action="save" data-index="${index}">${editor ? 'Save changes' : 'Save message'}</button>
              <button type="button" data-action="copy" data-index="${index}">Copy</button>
