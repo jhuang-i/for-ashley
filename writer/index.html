@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="A private writing space for morning messages and special notes for Ashley.">
+<title>Notes for Ashley</title><link rel="stylesheet" href="style.css"><script defer src="app.js"></script>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand"><span class="brand-icon">✦</span><div>Notes for Ashley<small>THE WRITING ROOM</small></div></div>
+  <nav aria-label="Writing room">
+    <button data-view="today"><span>☀</span> Today’s message</button>
+    <button data-view="history"><span>◷</span> Message history</button>
+    <button data-view="themes"><span>✧</span> Recurring themes</button>
+    <button data-view="date"><span>☾</span> Date night</button>
+    <button data-view="prompts"><span>▤</span> Reusable prompts</button>
+  </nav>
+  <div class="foot"><span>♡</span> Your drafts<small>Saved on this browser</small></div>
+</aside>
+<main>
+  <header class="hero">
+   <div class="sky" aria-hidden="true"><div class="moon"></div><i>✦</i><i>✧</i><i>✦</i><i>·</i><i>✧</i></div>
+   <div class="hero-copy"><p class="eyebrow" id="today-label"></p><h1 id="title"></h1><p id="subtitle"></p></div>
+  </header>
+  <div class="reader-link"><a href="../" target="_blank" rel="noopener">Open Ashley’s reading page</a></div>
+  <details class="panel"><summary>Publish a note on GitHub</summary>
+<p>Choose a date, then click <strong>Copy for GitHub</strong> on your draft. Open the notes file and paste the copied entry inside the square brackets. Separate entries with commas, or replace the entry for the same date. Commit your changes to publish.</p>
+<p>Anything committed to the repository is public, including future-dated notes.</p>
+<p><a href="https://github.com/jhuang-i/for-ashley/edit/main/notes.json" target="_blank" rel="noopener">Edit the notes file on GitHub</a></p>
+</details><br><div id="workspace"></div>
+</main>
+<div id="status" role="status" aria-live="polite"></div>
+</body></html>
