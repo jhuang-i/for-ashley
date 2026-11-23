@@ -187,7 +187,7 @@ function renderComposer() {
           <div class="actions">
              <button type="button" class="primary" data-action="save" data-index="${index}">${editor ? 'Save changes' : 'Save message'}</button>
              <button type="button" data-action="copy" data-index="${index}">Copy</button>
-             <button type="button" data-action="publish" data-index="${index}">Copy for GitHub</button>
+             <button type="button" data-action="publish" data-index="${index}">Publish for Ashley</button>
              ${editor ? '<button type="button" data-action="cancel">Back to history</button>' : ''}
           </div>
         </article>`).join('')}</div></section>
@@ -212,7 +212,7 @@ function renderRecords() {
   document.querySelector('#records').innerHTML = records.map((note) => `
    <article class="panel record"><div class="meta">${esc(formatDay(note.date, { month:'long', day:'numeric', year:'numeric' }))} · ${esc(note.settings.occasion)} · ${esc(note.settings.tone)}</div>
    <h3>${esc(note.variant)}</h3><p>${esc(note.text)}</p>
-   <div class="actions"><button data-action="edit" data-id="${note.id}">Edit</button><button data-action="reuse" data-id="${note.id}">Reuse</button><button data-action="copy-saved" data-id="${note.id}">Copy</button><button data-action="publish-saved" data-id="${note.id}">Copy for GitHub</button></div></article>`).join('') ||
+   <div class="actions"><button data-action="edit" data-id="${note.id}">Edit</button><button data-action="reuse" data-id="${note.id}">Reuse</button><button data-action="copy-saved" data-id="${note.id}">Copy</button><button data-action="publish-saved" data-id="${note.id}">Publish for Ashley</button></div></article>`).join('') ||
    '<div class="empty">' + (state.history.length ? 'No messages match these filters.' : 'Save a draft to start your message history.') + '</div>';
 }
 function renderThemes() {
@@ -249,17 +249,25 @@ function saveDraft(index) {
 }
 async function publishNote(button, date, occasion, text) {
   const message = clean(text);
-  if (!message) {
-    notify('Write a message before copying it.');
+  if (!message || message.length > 5000) {
+    notify('Write a note between 1 and 5,000 characters.');
     return;
   }
   const entry = JSON.stringify({ day: date, occasion, message }, null, 2);
-  try {
-    await navigator.clipboard.writeText(entry);
-    notify('Note copied. Add it to notes.json on GitHub.');
-  } catch {
-    notify('Clipboard unavailable. Select and copy the note text.');
+  const url = new URL('https://github.com/jhuang-i/for-ashley/issues/new');
+  url.searchParams.set('title', 'Publish a note for Ashley');
+  url.searchParams.set('body', entry);
+  if (url.href.length > 7000) {
+    try {
+      await navigator.clipboard.writeText(entry);
+      url.searchParams.delete('body');
+      notify('Long note copied. Paste it into the GitHub issue body.');
+    } catch {
+      notify('Couldn’t copy this long note. Try shortening it.');
+      return;
+    }
   }
+  window.location.assign(url.href);
 }
 async function copy(text) {
   if (!text.trim()) { notify('There’s no message to copy yet.'); return; }
